@@ -4,6 +4,7 @@ namespace Bavarianlabs;
 
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -11,7 +12,16 @@ class App extends Command
 {
     protected function configure()
     {
-        $this->setName("beer:paladar");
+        $this
+            ->setName("beer:paladar")
+            ->setDescription("Sistema especialista para harmonização de pratos e cervejas")
+            ->setHelp("Responda as perguntas para que possamos recomendar a melhor combinação")
+            ->addArgument(
+                'answer',
+                InputArgument::REQUIRED,
+                'Qual a harmonização você gostaria?'
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
