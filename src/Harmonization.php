@@ -9,7 +9,9 @@
 namespace Bavarianlabs;
 
 
-class Harmonization
+use Symfony\Component\Console\Command\Command;
+
+class Harmonization extends Command
 {
 
 }

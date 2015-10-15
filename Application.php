@@ -8,9 +8,9 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-use Bavarianlabs\GreetCommand;
+use Bavarianlabs\App;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
-$application->add(new GreetCommand());
+$application->add(new App());
 $application->run();
