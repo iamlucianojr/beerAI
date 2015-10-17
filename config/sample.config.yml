@@ -1,0 +1,8 @@
+db:
+    drive:
+        neo4j:
+            server: localhost
+            port: 7474
+            schema: http
+            user: neo4j
+            password: neo4j
