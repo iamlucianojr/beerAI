@@ -14,6 +14,7 @@
     },
     "minimum-stability": "dev",
     "require": {
-        "symfony/console": "^3.0@dev"
+        "symfony/console": "^3.0@dev",
+        "neoxygen/neoclient": "^3.1@dev"
     }
 }
