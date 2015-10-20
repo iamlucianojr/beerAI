@@ -1,2 +1,2 @@
 # Beer Artificial Intelligence
-A simple project to does specialist system AI
+A simple Symfony Console project to build a specialist system artificial intelligence
