@@ -68,7 +68,7 @@ class App extends Command
         $question->setMultiselect(true);
 
         $colors = $helper->ask($input, $output, $question);
-        $output->writeln('You have just selected: ' . implode(', ', $colors));
+        $output->writeln('You have just selected: '.implode(', ', $colors));
 
         $this->execute($input, $output);
     }
