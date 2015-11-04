@@ -1,0 +1,29 @@
+1,STANDARD AMERICAN BEER,BeerStyle
+2,INTERNATIONAL LAGER,BeerStyle
+3,CZECH LAGER,BeerStyle
+4,PALE MALTY EUROPEAN LAGER,BeerStyle
+5,American Wheat Beer,BeerBrand
+6,American Light Lager,BeerBrand
+7,American Lager,BeerBrand
+8,Cream Ale,BeerBrand
+9,International Pale Lager,BeerBrand
+10,International Dark Lager,BeerBrand
+11,International Amber Lager,BeerBrand
+12,Czech Dark Lager,BeerBrand
+13,Czech Pale Lager,BeerBrand
+14,Czech Amber Lager,BeerBrand
+15,Czech Premium Pale Lager,BeerBrand
+16,Munich Helles,BeerBrand
+17,Festbier,BeerBrand
+18,Helles Bock,BeerBrand
+19,Escura,BeerColor
+20,Clara,BeerColor
+21,Vermelha,BeerColor
+22,Carne Assada,Comida
+23,Frango,Comida
+24,Peixe,Comida
+25,Salada,Comida
+26,Fruta,Comida
+27,Teor Forte,NivelAlcolico
+28,Teor Médio,NivelAlcolico
+29,Teor Baixo,NivelAlcolico
