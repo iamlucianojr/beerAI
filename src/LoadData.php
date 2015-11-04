@@ -50,13 +50,57 @@ class LoadData extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $file = fopen(__DIR__."/../resources/data_nodes.csv","r");
+        $this->purgeDatabase();
 
-        while ($row = fgetcsv($file)) {
-            $query = 'create (:'.$row[2].' {name: "'.$row[1].'"})';
-            $this->clientDatabase->sendCypherQuery($query);
-        }
+        $nodes = $this->getResourceFile();
+
+        $this->inputData($nodes);
+
+        $relationships = $this->getResourceFileRelationship();
+
+        $this->inputRelationships($relationships);
 
         $output->writeln("Database gerada com sucesso");
+    }
+
+    /**
+     * @return string
+     */
+    protected function purgeDatabase()
+    {
+        $query = 'MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n,r';
+        $this->clientDatabase->sendCypherQuery($query);
+    }
+
+    /**
+     * @return resource
+     */
+    protected function getResourceFile()
+    {
+        return fopen(__DIR__ . "/../resources/data_nodes.csv", "r");
+    }
+
+    /**
+     * @param $file
+     */
+    protected function inputData($file)
+    {
+        while ($row = fgetcsv($file)) {
+            $query = 'create (:' . $row[2] . ' {id: "' . $row[0] . '", name: "' . $row[1] . '"})';
+            $this->clientDatabase->sendCypherQuery($query);
+        }
+    }
+
+    private function inputRelationships($relationship)
+    {
+        while ($row = fgetcsv($relationship)) {
+            $query = 'MATCH (a),(b) WHERE a.id = "' . $row[0] . '" AND b.id = "' . $row[1] . '" CREATE (a)-[r:' . $row[2] . ']->(b) RETURN r';
+            $this->clientDatabase->sendCypherQuery($query);
+        }
+    }
+
+    private function getResourceFileRelationship()
+    {
+        return fopen(__DIR__ . "/../resources/data_relationships.csv", "r");
     }
 }
