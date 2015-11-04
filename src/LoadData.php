@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Yaml\Yaml;
 
-class App extends Command
+class LoadData extends Command
 {
     /**
      * @var \Neoxygen\NeoClient\Client $clientDatabase
@@ -39,46 +39,24 @@ class App extends Command
         ;
     }
 
-
     protected function configure()
     {
         $this
-            ->setName("beer:paladar")
+            ->setName("beer:paladar:load")
             ->setDescription("Sistema especialista para harmonização de pratos e cervejas")
-            ->setHelp("Responda as perguntas para que possamos recomendar a melhor combinação");
+            ->setHelp("Criar base de dados");
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $params = ['limit' => 50];
+        $file = fopen(__DIR__."/../resources/data_nodes.csv","r");
 
-        $file = fopen("http://localhost/teste.csv","r");
         while ($row = fgetcsv($file)) {
             $query = 'create (:'.$row[2].' {name: "'.$row[1].'"})';
-            $this->clientDatabase->sendCypherQuery($query, $params);
-//            var_dump(print_r($row));
+            $this->clientDatabase->sendCypherQuery($query);
         }
 
-        exit;
-
-        $query = 'MATCH (ee:BeerNodes) WHERE ee.type = "BeerType" and ee.name = "stout" RETURN ee LIMIT {limit}';
-
-
-        $dataResult = $this->clientDatabase->sendCypherQuery($query, $params)->getResult();
-
-        $helper = $this->getHelper('question');
-
-        $question = new ChoiceQuestion(
-            'Please select your favorite colors (defaults to red and blue)',
-            array('red', 'blue', 'yellow'),
-            '0,1'
-        );
-        $question->setMultiselect(true);
-
-        $colors = $helper->ask($input, $output, $question);
-        $output->writeln('You have just selected: '.implode(', ', $colors));
-
-        $this->execute($input, $output);
+        $output->writeln("Database gerada com sucesso");
     }
 }
