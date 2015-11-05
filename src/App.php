@@ -51,34 +51,40 @@ class App extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $params = ['limit' => 50];
+        $this->questionAboutFood($input, $output);
+    }
 
-        $file = fopen("http://localhost/teste.csv","r");
-        while ($row = fgetcsv($file)) {
-            $query = 'create (:'.$row[2].' {name: "'.$row[1].'"})';
-            $this->clientDatabase->sendCypherQuery($query, $params);
-//            var_dump(print_r($row));
-        }
+    private function questionAboutFood(InputInterface $input, OutputInterface $output)
+    {
+        $foodOptions = $this->getFoodOptions();
 
-        exit;
-
-        $query = 'MATCH (ee:BeerNodes) WHERE ee.type = "BeerType" and ee.name = "stout" RETURN ee LIMIT {limit}';
-
-
-        $dataResult = $this->clientDatabase->sendCypherQuery($query, $params)->getResult();
+        $question = new ChoiceQuestion(
+            'Por favor informe o tipo da sua refeição',
+            $foodOptions
+        );
 
         $helper = $this->getHelper('question');
 
-        $question = new ChoiceQuestion(
-            'Please select your favorite colors (defaults to red and blue)',
-            array('red', 'blue', 'yellow'),
-            '0,1'
-        );
-        $question->setMultiselect(true);
+        $food = $helper ->ask($input, $output, $question);
 
-        $colors = $helper->ask($input, $output, $question);
-        $output->writeln('You have just selected: ' . implode(', ', $colors));
+        $output->writeln('Você selecionou: ' . $food);
 
         $this->execute($input, $output);
+    }
+
+    /**
+     * @return \Neoxygen\NeoClient\Formatter\Result[]
+     */
+    private function getFoodOptions()
+    {
+        $query = 'MATCH (n:Comida) RETURN DISTINCT n';
+
+        $foodOptions = $this->clientDatabase->sendCypherQuery($query)->getResult();
+
+        $arrOptions = array();
+        foreach ($foodOptions->getNodes() as $node) {
+            $arrOptions[] = $node->getProperty('name');
+        }
+        return $arrOptions;
     }
 }
