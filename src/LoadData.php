@@ -19,7 +19,7 @@ class LoadData extends Command
 
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        $config = Yaml::parse(file_get_contents(__DIR__.'/../config/config.yml'))['db']['drive']['neo4j'];
+        $config = Yaml::parse(file_get_contents(__DIR__.'/../config/sample.config.yml'))['db']['drive']['neo4j'];
         $connection = new Connection(...array_values($config));
 
         //#TODO Refactor
@@ -28,7 +28,7 @@ class LoadData extends Command
                 'default',
                 $connection->getSchema(),
                 $connection->gethost(),
-                $connection->getPort(),
+                (int) $connection->getPort(),
                 true,
                 $connection->getUser(),
                 $connection->getPassword()
@@ -85,18 +85,23 @@ class LoadData extends Command
      */
     protected function inputData($file)
     {
+        $tx = $this->clientDatabase->prepareTransaction();
         while ($row = fgetcsv($file)) {
-            $query = 'create (:' . $row[2] . ' {id: "' . $row[0] . '", name: "' . $row[1] . '"})';
-            $this->clientDatabase->sendCypherQuery($query);
+            $query = 'create (:' . $row[2] . ' {id: {id}, name: {name}})';
+            $tx->pushQuery($query, ['id' => $row[0], 'name' => $row['1']]);
         }
+        $tx->commit();
     }
 
     private function inputRelationships($relationship)
     {
+        $tx = $this->clientDatabase->prepareTransaction();
         while ($row = fgetcsv($relationship)) {
-            $query = 'MATCH (a),(b) WHERE a.id = "' . $row[0] . '" AND b.id = "' . $row[1] . '" CREATE (a)-[r:' . $row[2] . ']->(b) RETURN r';
-            $this->clientDatabase->sendCypherQuery($query);
+            $query = 'MATCH (a),(b) WHERE a.id = {aid} AND b.id = {bid} CREATE (a)-[r:' . $row[2] . ']->(b) RETURN r';
+            $p = ['aid' => $row[0], 'bid' => $row[1]];
+            $tx->pushQuery($query, $p);
         }
+        $tx->commit();
     }
 
     private function getResourceFileRelationship()
