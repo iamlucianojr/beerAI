@@ -3,7 +3,7 @@
 namespace Bavarianlabs;
 
 
-interface Beer
+class Beer implements BeerInterface, HarmonizationInterface
 {
 
 }

@@ -3,7 +3,8 @@
 namespace Bavarianlabs;
 
 
-class Chicken implements  Meat
-{
+use Neoxygen\NeoClient\Client;
 
+class Chicken
+{
 }

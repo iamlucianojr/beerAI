@@ -3,15 +3,22 @@
 namespace Bavarianlabs;
 
 
+use Bavarianlabs\Meat\Meat;
+use Bavarianlabs\Meat\MeatInterface;
+use Bavarianlabs\Question\ChoiceQuestion;
 use Neoxygen\NeoClient\ClientBuilder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Yaml\Yaml;
 
 class App extends Command
 {
+    private $answers = array();
+    /**
+     * @var MeatInterface
+     */
+    private $meat;
     /**
      * @var \Neoxygen\NeoClient\Client $clientDatabase
      */
@@ -37,6 +44,8 @@ class App extends Command
             ->setDefaultTimeout(20)
             ->build()
         ;
+
+        $this->meat = new Meat();
     }
 
 
@@ -51,40 +60,30 @@ class App extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->questionAboutFood($input, $output);
+        $this->questionAboutMeat($input, $output);
+        $this->questionAboutHarmonization($input, $output);
+        $this->execute($input, $output);
     }
 
-    private function questionAboutFood(InputInterface $input, OutputInterface $output)
+    private function questionAboutMeat(InputInterface $input, OutputInterface $output)
     {
-        $foodOptions = $this->getFoodOptions();
+        $meatOptions = $this->meat->getMeatOptions($this->clientDatabase);
 
         $question = new ChoiceQuestion(
             'Por favor informe o tipo da sua refeição',
-            $foodOptions
+            $meatOptions
         );
 
         $helper = $this->getHelper('question');
 
-        $food = $helper ->ask($input, $output, $question);
+        $meat = $helper ->ask($input, $output, $question);
 
-        $output->writeln('Você selecionou: ' . $food);
+        $output->writeln('Você selecionou: ' . $meat);
 
-        $this->execute($input, $output);
+        $this->answers['meat'] = $meat;
     }
 
-    /**
-     * @return \Neoxygen\NeoClient\Formatter\Result[]
-     */
-    private function getFoodOptions()
+    private function questionAboutHarmonization($input, $output)
     {
-        $query = 'MATCH (n:Comida) RETURN DISTINCT n';
-
-        $foodOptions = $this->clientDatabase->sendCypherQuery($query)->getResult();
-
-        $arrOptions = array();
-        foreach ($foodOptions->getNodes() as $node) {
-            $arrOptions[] = $node->getProperty('name');
-        }
-        return $arrOptions;
     }
 }
