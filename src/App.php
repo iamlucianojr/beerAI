@@ -71,7 +71,7 @@ class App extends Command
 
         $meat = $helper ->ask($input, $output, $question);
 
-        $output->writeln('Você selecionou: ' . $meat);
+        $output->writeln('Você selecionou: '.$meat);
 
         $this->answers['meat'] = $meat;
     }
@@ -88,7 +88,7 @@ class App extends Command
 
         $answer = $helper ->ask($input, $output, $question);
 
-        $output->writeln('Você selecionou: ' . $answer);
+        $output->writeln('Você selecionou: '.$answer);
 
         $this->answers['harmonization'] = $answer;
     }
