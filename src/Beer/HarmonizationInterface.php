@@ -1,9 +1,11 @@
 <?php
 
-namespace Bavarianlabs;
+namespace Bavarianlabs\Beer;
 
+
+use Neoxygen\NeoClient\Client;
 
 interface HarmonizationInterface
 {
-    function getHarmonizationOptions();
+    function getHarmonizationOptions(Client $clientDatabase);
 }
