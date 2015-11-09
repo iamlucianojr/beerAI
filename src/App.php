@@ -3,14 +3,13 @@
 namespace Bavarianlabs;
 
 
-use Bavarianlabs\Meat\Meat;
+use Bavarianlabs\Beer\HarmonizationInterface;
 use Bavarianlabs\Meat\MeatInterface;
 use Bavarianlabs\Question\ChoiceQuestion;
-use Neoxygen\NeoClient\ClientBuilder;
+use Neoxygen\NeoClient\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Yaml\Yaml;
 
 class App extends Command
 {
@@ -19,35 +18,30 @@ class App extends Command
      * @var MeatInterface
      */
     private $meat;
+
     /**
      * @var \Neoxygen\NeoClient\Client $clientDatabase
      */
     private $clientDatabase;
 
-    protected function initialize(InputInterface $input, OutputInterface $output)
+    /**
+     * @var HarmonizationInterface
+     */
+    private $harmonization;
+
+    /**
+     * App constructor.
+     * @param Client $connection
+     * @param MeatInterface $meat
+     * @param HarmonizationInterface $harmonization
+     */
+    public function __construct(Client $connection, MeatInterface $meat, HarmonizationInterface $harmonization)
     {
-        $config = Yaml::parse(file_get_contents(__DIR__.'/../config/config.yml'))['db']['drive']['neo4j'];
-        $connection = new Connection(...array_values($config));
-
-        //#TODO Refactor
-        $this->clientDatabase = ClientBuilder::create()
-            ->addConnection(
-                'default',
-                $connection->getSchema(),
-                $connection->gethost(),
-                $connection->getPort(),
-                true,
-                $connection->getUser(),
-                $connection->getPassword()
-            )
-            ->setAutoFormatResponse(true)
-            ->setDefaultTimeout(20)
-            ->build()
-        ;
-
-        $this->meat = new Meat();
+        parent::__construct();
+        $this->meat = $meat;
+        $this->harmonization = $harmonization;
+        $this->clientDatabase = $connection;
     }
-
 
     protected function configure()
     {
@@ -62,17 +56,16 @@ class App extends Command
     {
         $this->questionAboutMeat($input, $output);
         $this->questionAboutHarmonization($input, $output);
-        $this->execute($input, $output);
+//        $this->execute($input, $output);
     }
 
     private function questionAboutMeat(InputInterface $input, OutputInterface $output)
     {
         $meatOptions = $this->meat->getMeatOptions($this->clientDatabase);
 
-        $question = new ChoiceQuestion(
-            'Por favor informe o tipo da sua refeição',
-            $meatOptions
-        );
+        $text = 'Por favor informe o tipo da sua refeição';
+
+        $question = $this->buildQuestion($meatOptions, $text);
 
         $helper = $this->getHelper('question');
 
@@ -83,7 +76,34 @@ class App extends Command
         $this->answers['meat'] = $meat;
     }
 
-    private function questionAboutHarmonization($input, $output)
+    private function questionAboutHarmonization(InputInterface $input, OutputInterface $output)
     {
+        $harmonizationOptions = $this->harmonization->getHarmonizationOptions($this->clientDatabase);
+
+        $text = 'Por favor informe o tipo de harmonização desejado';
+
+        $question = $this->buildQuestion($harmonizationOptions, $text);
+
+        $helper = $this->getHelper('question');
+
+        $answer = $helper ->ask($input, $output, $question);
+
+        $output->writeln('Você selecionou: ' . $answer);
+
+        $this->answers['harmonization'] = $answer;
+    }
+
+    /**
+     * @param $meatOptions
+     * @param $text
+     * @return ChoiceQuestion
+     */
+    private function buildQuestion($meatOptions, $text)
+    {
+        $question = new ChoiceQuestion(
+            $text,
+            $meatOptions
+        );
+        return $question;
     }
 }
