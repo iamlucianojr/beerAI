@@ -14,10 +14,31 @@ class Harmonization implements HarmonizationInterface
     function getHarmonizationOptions(Client $clientDatabase)
     {
         #TODO Refactor it to get a real data
+//        return array(
+//            $this::E_CONSTRASTE => "Contraste",
+//            $this::E_EQUILIBRIO => 'Equilibrado',
+//            $this::E_SEMELHANTE => 'Semelhança'
+//        );
+
         return array(
-            $this::E_CONSTRASTE => "Contraste",
-            $this::E_EQUILIBRIO => 'Equilibrado',
-            $this::E_SEMELHANTE => 'Semelhança'
+            "Contraste",
+            'Equilibrado',
+            'Semelhanca'
         );
+    }
+
+    function getOption($string)
+    {
+        switch ($string) {
+            case 'Contraste':
+                return $this::E_CONSTRASTE;
+            break;
+            case 'Equilibrado':
+                return $this::E_EQUILIBRIO;
+            break;
+            case 'Semelhanca':
+                return $this::E_SEMELHANTE;
+            break;
+        }
     }
 }

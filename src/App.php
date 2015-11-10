@@ -3,6 +3,8 @@
 namespace Bavarianlabs;
 
 
+use Bavarianlabs\Beer\AlcoholLevel;
+use Bavarianlabs\Beer\Attribute\Color;
 use Bavarianlabs\Beer\HarmonizationInterface;
 use Bavarianlabs\Meat\MeatInterface;
 use Bavarianlabs\Question\ChoiceQuestion;
@@ -30,17 +32,31 @@ class App extends Command
     private $harmonization;
 
     /**
+     * @var AlcoholLevel
+     */
+    private $alcoholLevel;
+
+    /**
+     * @var Color
+     */
+    private $color;
+
+    /**
      * App constructor.
      * @param Client $connection
      * @param MeatInterface $meat
      * @param HarmonizationInterface $harmonization
+     * @param AlcoholLevel $alcoholLevel
+     * @param Color $color
      */
-    public function __construct(Client $connection, MeatInterface $meat, HarmonizationInterface $harmonization)
+    public function __construct(Client $connection, MeatInterface $meat, HarmonizationInterface $harmonization, AlcoholLevel $alcoholLevel, Color $color)
     {
         parent::__construct();
-        $this->meat = $meat;
-        $this->harmonization = $harmonization;
-        $this->clientDatabase = $connection;
+        $this->meat             = $meat;
+        $this->harmonization    = $harmonization;
+        $this->alcoholLevel     = $alcoholLevel;
+        $this->clientDatabase   = $connection;
+        $this->color            = $color;
     }
 
     protected function configure()
@@ -56,7 +72,9 @@ class App extends Command
     {
         $this->questionAboutMeat($input, $output);
         $this->questionAboutHarmonization($input, $output);
-//        $this->execute($input, $output);
+        $this->questionAboutAlcoholLevel($input, $output);
+        $this->questionAboutColor($input, $output);
+        $this->recommendBeers($input, $output);
     }
 
     private function questionAboutMeat(InputInterface $input, OutputInterface $output)
@@ -73,7 +91,10 @@ class App extends Command
 
         $output->writeln('Você selecionou: ' . $meat);
 
-        $this->answers['meat'] = $meat;
+        $this->answers[0] = array(
+            'label'         => 'Comida',
+            'choice'        => $meat
+        );
     }
 
     private function questionAboutHarmonization(InputInterface $input, OutputInterface $output)
@@ -90,7 +111,49 @@ class App extends Command
 
         $output->writeln('Você selecionou: ' . $answer);
 
-        $this->answers['harmonization'] = $answer;
+        $this->answers[0]['relationship'] = $this->harmonization->getOption($answer);
+    }
+
+    private function questionAboutAlcoholLevel(InputInterface $input, OutputInterface $output)
+    {
+        $alcoholLevelOptions = $this->alcoholLevel->getAlcoholOptions($this->clientDatabase);
+
+        $text = 'Qual o teor alcólico você prefere';
+
+        $question = $this->buildQuestion($alcoholLevelOptions, $text);
+
+        $helper = $this->getHelper('question');
+
+        $answer = $helper ->ask($input, $output, $question);
+
+        $output->writeln('Você selecionou: ' . $answer);
+
+        $this->answers[] = array(
+            'label'         => 'NivelAlcolico',
+            'relationship'  => 'TEM_PERCENTUAL_ALCOLICO',
+            'choice'        => $answer
+        );
+    }
+
+    private function questionAboutColor(InputInterface $input, OutputInterface $output)
+    {
+        $colorOptions = $this->color->getColorOptions($this->clientDatabase);
+
+        $text = 'Qual a coloração de cerveja preferida';
+
+        $question = $this->buildQuestion($colorOptions, $text);
+
+        $helper = $this->getHelper('question');
+
+        $answer = $helper ->ask($input, $output, $question);
+
+        $output->writeln('Você selecionou: ' . $answer);
+
+        $this->answers[] = array(
+            'label'         => 'BeerColor',
+            'relationship'  => 'TEM_COLORACAO',
+            'choice'        => $answer
+        );
     }
 
     /**
@@ -105,5 +168,27 @@ class App extends Command
             $meatOptions
         );
         return $question;
+    }
+
+    private function recommendBeers(InputInterface $input, OutputInterface $output)
+    {
+        $query = 'MATCH ';
+        foreach ($this->answers as $item) {
+            $query .= ' (:' . $item['label'] . '{ name: "' . $item['choice'] . '" })<-[:' . $item['relationship'] . ']-(beer:BeerBrand),';
+        }
+
+        $query = substr($query, 0, -1);
+
+        $query.= " return beer ";
+
+        $result = $this->clientDatabase->sendCypherQuery($query)->getResult();
+
+        $arrResult = array();
+        foreach ($result->getNodes() as $node) {
+            $arrResult[] = $node->getProperty('name');
+        }
+
+        $output->writeln('As opções de cervejas possíveis são(é): ' . implode(',', $arrResult));
+
     }
 }

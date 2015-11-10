@@ -8,4 +8,6 @@ use Neoxygen\NeoClient\Client;
 interface HarmonizationInterface
 {
     function getHarmonizationOptions(Client $clientDatabase);
+
+    function getOption($option);
 }

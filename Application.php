@@ -2,6 +2,8 @@
 require __DIR__.'/vendor/autoload.php';
 
 use Bavarianlabs\App;
+use Bavarianlabs\Beer\AlcoholLevel;
+use Bavarianlabs\Beer\Attribute\Color;
 use Bavarianlabs\Connection;
 use Bavarianlabs\Beer\Harmonization;
 use Bavarianlabs\LoadData;
@@ -29,10 +31,13 @@ $clientDatabase = ClientBuilder::create()
     ->build()
 ;
 
-$application = new Application();
-$meat = new Meat();
-$harmonization = new Harmonization();
+$application    = new Application();
+$meat           = new Meat();
+$harmonization  = new Harmonization();
+$alcoholLevel   = new AlcoholLevel();
+$color          = new Color();
+//var_dump($alcoholLevel);exit;
 # TODO: Use Symfony DI
-$application->add(new App($clientDatabase, $meat, $harmonization));
+$application->add(new App($clientDatabase, $meat, $harmonization, $alcoholLevel, $color));
 $application->add(new LoadData());
 $application->run();
