@@ -152,7 +152,7 @@ class App extends Command
         $this->answers[] = array(
             'label'         => 'BeerColor',
             'relationship'  => 'TEM_COLORACAO',
-            'choice'        => $answer
+                'choice'        => $answer
         );
     }
 
